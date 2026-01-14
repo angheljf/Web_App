@@ -4,14 +4,14 @@ from io import BytesIO
 
 # Page configuration
 st.set_page_config(
-    page_title="JA Elevate - Student Counts",
+    page_title="CDP - Student Counts & Aggregations",
     page_icon="📊",
     layout="wide"
 )
 
 st.title("📊 CDP - Student Counts & Aggregations")
 st.markdown(
-    "Upload an Excel file to get student counts aggregated by School Type."
+    "Upload an Excel file to get student counts aggregated by Group By Column."
 )
 
 # File uploader

@@ -375,15 +375,32 @@ if uploaded_file is not None:
                 # Data cleaning
                 st.subheader("🧹 Data Cleaning Applied")
 
-                # Remove rows with missing values in either column
-                original_count = len(df)
-                df = df.dropna(subset=[school_type_col, student_count_col])
-                removed_count = original_count - len(df)
-                if removed_count > 0:
-                    st.info(f"ℹ️ Removed {removed_count} rows with empty/NaN values")
-
-                # Strip whitespace from School Type column (works on object dtype)
-                df[school_type_col] = df[school_type_col].str.strip()
+                # Fill missing values instead of removing rows
+                # This helps identify data that needs to be filled in the source Excel
+                # Handle both actual NaN and string "nan" (from earlier string conversion)
+                categorical_missing = (
+                    df[school_type_col].isna().sum() + 
+                    df[school_type_col].astype(str).str.lower().str.strip().isin(['nan', '']).sum()
+                )
+                numeric_missing = df[student_count_col].isna().sum()
+                
+                # Fill categorical column: handle actual NaN, string "nan", and empty strings
+                df[school_type_col] = df[school_type_col].fillna("Empty")
+                df[school_type_col] = df[school_type_col].astype(str).str.strip()
+                df[school_type_col] = df[school_type_col].replace(
+                    ['nan', 'NaN', 'NAN', ''], 'Empty'
+                )
+                
+                # Fill numeric column with 0
+                df[student_count_col] = df[student_count_col].fillna(0)
+                
+                if categorical_missing > 0 or numeric_missing > 0:
+                    st.warning(
+                        f"⚠️ Found missing data: {categorical_missing} empty values in "
+                        f"'{school_type_col}' (filled with 'Empty'), "
+                        f"{numeric_missing} empty values in '{student_count_col}' (filled with 0). "
+                        f"Consider updating the source Excel file."
+                    )
 
                 # Standardize Private Schools
                 df[school_type_col] = df[school_type_col].replace(

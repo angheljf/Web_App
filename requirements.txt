@@ -1,1 +1,1 @@
-conda install openpyxl
+pip install openpyxl
